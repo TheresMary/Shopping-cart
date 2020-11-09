@@ -1,0 +1,20 @@
+<div class="blackbg">
+  <section class="container" >
+    <div class="row">
+      {{#each products}}
+      <div class="col-md-4 mt-5">
+        <div class="card border-secondary" style="width: 18rem; background:rgb(0, 0, 0);">
+          <div class="card-body">
+            <h6 class="card-title white">{{this.Name}}
+              <p class="card-text right grey size">{{this.Size}}</p>
+            </h6>
+            <img src="/product-images/{{this._id}}.jpg" class="card-img-top" alt="...">
+            <p class="card-text mt-3 white">₹ {{this.Price}}
+              <a href="#" class="card-link linkfont right">BUY NOW!</a></p>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </section>
+ </div>

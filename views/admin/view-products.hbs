@@ -2,7 +2,7 @@
 
   <div class="row">
     <a href="/admin/add-products">
-    <button class="btn btn-outline-info mt-5">Add Products</button></a>
+    <button class="btn btn-outline-info mt-5 white">Add Products</button></a>
   </div>
 
 
@@ -24,12 +24,12 @@
       {{#each products}}
       <tr>
         <th scope="row">{{@index}}</th>
-        <td>{{this.name}}</td>
-        <td>{{this.category}}</td>
-        <td>{{this.size}}</td>
-        <td>{{this.price}}</td>
-        <td>{{this.description}}</td>
-        <td><img style="width:70px; height:70px"  src="{{this.image}}"></td>
+        <td>{{this.Name}}</td>
+        <td>{{this.Category}}</td>
+        <td>{{this.Size}}</td>
+        <td>{{this.Price}}</td>
+        <td>{{this.Description}}</td>
+        <td><img style="width:70px; height:70px"  src="/product-images/{{this._id}}.jpg"></td>
       </tr>
       {{/each}}
     </tbody>
