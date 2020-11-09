@@ -9,6 +9,7 @@ router.get('/', function(req, res, next) {
     console.log(products)
     res.render('admin/view-products',{admin:true, products});
   });
+});
  
   router.get('/add-products',(req,res)=>{
     res.render('admin/add-products')
@@ -22,8 +23,8 @@ router.get('/', function(req, res, next) {
       console.log(id)
       img.mv('./public/product-images/'+id+'.jpg',(err)=>{
         if(!err){
-          res.render('admin/add-products')
-        }
+          res.render('admin/add-products',{admin:true})
+      }
         else
           console.log(err);
       })
@@ -31,7 +32,6 @@ router.get('/', function(req, res, next) {
   })
 
 
-});
-
  
+
 module.exports = router;
