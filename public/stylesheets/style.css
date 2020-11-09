@@ -1,8 +1,25 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.blackbg{
+  background:black;
 }
-
-a {
-  color: #00B7FF;
+.right{
+  text-align: right;
+  float: right;
+}
+.grey{
+  color:rgb(182, 181, 181);
+}
+.white{
+  color: white;
+}
+.size{
+  font-size: 14px;
+}
+.linkfont{
+  font-size: 14px;
+  color:floralwhite;
+  font-weight: 700;
+  cursor: pointer;
+}
+.linkfont:hover{
+  color:rgb(172, 168, 168);
 }
