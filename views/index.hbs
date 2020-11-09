@@ -1,2 +1,20 @@
-<h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
+
+  <section class="container">
+    <div class="row">
+      {{#each products}}
+      <div class="col-md-4 mt-5">
+        <div class="card" style="width: 18rem; background:black;">
+          <div class="card-body">
+            <h6 class="card-title white">{{this.name}}
+              <p class="card-text right grey size">{{this.size}}</p>
+            </h6>
+            <img src="{{this.image}}" class="card-img-top" alt="...">
+            <p class="card-text mt-3 white">{{this.price}}
+              <a href="#" class="card-link linkfont right">BUY NOW!</a></p>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </section>
+
