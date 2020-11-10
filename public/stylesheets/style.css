@@ -1,6 +1,9 @@
 .blackbg{
   background:black;
 }
+.black{
+  color:black;
+}
 .right{
   text-align: right;
   float: right;
