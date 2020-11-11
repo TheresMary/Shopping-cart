@@ -3,6 +3,15 @@ var router = express.Router();
 var productHelpers = require('../helpers/product-helpers')
 var userHelpers = require('../helpers/user-helpers')
 
+const verifyLogin=(req,res,next)=>{
+  if(req.session.loggedIn){
+    next()
+  }
+  else{
+    res.redirect('/login')
+  }
+}
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
   let user=req.session.user;
@@ -14,7 +23,13 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/login',(req,res)=>{
-  res.render('user/user-login')
+  if(req.session.loggedIn){
+    res.redirect('/')
+  }
+  else{
+  res.render('user/user-login',{"loginErr":req.session.loginError})
+  req.session.loginError=false;     //error should go while refreshing
+  }
 });
 
 router.get('/signup',(req,res)=>{
@@ -38,6 +53,7 @@ router.post('/login',(req,res)=>{
        res.redirect('/')
     }
     else{
+      req.session.loginError="Invalid User. Try Again!";
       res.redirect('/login')
     }
   })
@@ -46,6 +62,10 @@ router.post('/login',(req,res)=>{
 router.get('/logout',(req,res)=>{
   req.session.destroy();
   res.render('user/user-login')
+});
+
+router.get('/cart',verifyLogin,(req,res)=>{       //go to cart only if loggedin
+  res.render('user/cart')
 });
 
 

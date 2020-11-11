@@ -4,6 +4,9 @@
             <form action="/login" method="POST" class="form-group text-center border border-dark mt-5 p-5">
 
                 <p class="h2 mb-4">Login</p>
+                {{#if loginErr}}
+                <h5 class="error red">{{loginErr}}</h5>
+                {{/if}}
 
                 <input type="email" name="Email" class="form-control mb-4" placeholder="E-mail">
                 <input type="password" name="Psw" class="form-control mb-4" placeholder="Password">
