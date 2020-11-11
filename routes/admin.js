@@ -30,7 +30,18 @@ router.get('/', function(req, res, next) {
       })
     })
   })
+ 
+  router.get('/edit-products/',(req,res)=>{
+    
+  });
 
+  router.get('/delete-products/:id',(req,res)=>{
+    let prodId = req.params.id;
+    console.log(prodId);
+    productHelpers.deleteProducts(prodId).then((response)=>{
+      res.redirect('/admin/')
+    })
+  });
 
  
 
