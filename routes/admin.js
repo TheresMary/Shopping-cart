@@ -30,10 +30,6 @@ router.get('/', function(req, res, next) {
       })
     })
   })
- 
-  router.get('/edit-products/',(req,res)=>{
-    
-  });
 
   router.get('/delete-products/:id',(req,res)=>{
     let prodId = req.params.id;
@@ -42,6 +38,23 @@ router.get('/', function(req, res, next) {
       res.redirect('/admin/')
     })
   });
+
+  router.get('/edit-products/:id',async(req,res)=>{
+     let prodId = req.params.id;
+     let product = await productHelpers.getProductDetails(prodId)
+     console.log(product)
+     res.render('admin/edit-products',{admin:true, product});
+  });
+
+  router.post('/edit-products/:id',async(req,res)=>{
+    productHelpers.editProduct(req.params.id,req.body).then(()=>{
+      res.redirect('/admin/')
+      if(req.files.Image){                              //if image  in request
+        let img = req.files.Image
+        img.mv('./public/product-images/'+req.params.id+'.jpg')    //rewrite image -> only 1 image with 1 id name
+      }
+    })
+ });
 
  
 

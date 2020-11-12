@@ -26,16 +26,38 @@ module.exports={
             resolve(response)
         })
         })
+    },
+
+    getProductDetails:(prodId)=>{
+        return new Promise((resolve,reject)=>{
+            db.get().collection(collection.PRODUCT_COLLECTION).findOne({_id:ObjectID(prodId)}).then((products)=>{
+                resolve(products)
+             })
+        })
+    },
+
+    editProduct:(prodId,prodDetails)=>{
+        return new Promise((resolve,reject)=>{
+            db.get().collection(collection.PRODUCT_COLLECTION)
+            .updateOne({_id:ObjectID(prodId)},{
+                $set:{
+                        Name:prodDetails.Name,
+                        Category:prodDetails.Category,
+                        Size:prodDetails.Size,
+                        Price:prodDetails.Price,
+                        Description:prodDetails.Description
+                     }
+            }).then((response)=>{
+                resolve(response )
+            })
+        })
     }
 
 
 
+
+
+
+
+
 }
-
-
-
-
-
-
-
-
