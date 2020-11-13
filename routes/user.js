@@ -1,3 +1,4 @@
+const { response } = require('express');
 var express = require('express');
 var router = express.Router();
 var productHelpers = require('../helpers/product-helpers')
@@ -15,7 +16,7 @@ const verifyLogin=(req,res,next)=>{
 /* GET home page. */
 router.get('/', function(req, res, next) {
   let user=req.session.user;
-  console.log(user)
+  //console.log(user)
   productHelpers.getAllProducts().then((products)=>{
     //console.log(products)
     res.render('user/view-products', { title: 'BOOTS', products,user});
@@ -39,6 +40,8 @@ router.get('/signup',(req,res)=>{
 router.post('/signup',(req,res)=>{
   userHelpers.doSignup(req.body).then((response)=>{
           console.log(response)
+          req.session.loggedIn=true;
+          req.session.user=response;
           res.redirect('/')
 
       })
@@ -68,6 +71,10 @@ router.get('/cart',verifyLogin,(req,res)=>{       //go to cart only if loggedin
   res.render('user/cart')
 });
 
-
+router.get('/add-to-cart/:id',verifyLogin,(req,res)=>{
+  userHelpers.addToCart(req.params.id,req.session.user._id).then(()=>{
+    res.redirect('/')
+  })
+});
 
 module.exports = router;

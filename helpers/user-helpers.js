@@ -1,6 +1,10 @@
 var db = require('../config/connection')
 var collection = require('../config/collections')
 var bcrypt = require('bcrypt')
+const { CART_COLLECTION } = require('../config/collections')
+const { ObjectId } = require('mongodb')
+const { response } = require('express')
+var objectId = require('mongodb').ObjectID
 
 
 module.exports={
@@ -32,6 +36,29 @@ module.exports={
             }
             resolve(response)                //return response back to doLogin
 
+        })
+    },
+
+    addToCart:(prodId,userId)=>{
+        return new Promise(async(resolve,reject)=>{
+            let userCart=await db.get().collection(collection.CART_COLLECTION).findOne({user:ObjectId(userId)})
+            if(userCart){       //user already has a cart - update items
+                db.get().collection(collection.CART_COLLECTION).updateOne({user:ObjectId(userId)},
+                {
+                        $push:{products:objectId(prodId)} 
+                }).then((response)=>{
+                    resolve()
+                })    
+            } 
+            else{              //no cart -create cart
+                let cartObj={
+                    user:objectId(userId),
+                    products:[objectId(prodId)]
+                }
+                db.get().collection(collection.CART_COLLECTION).insertOne(cartObj).then((response)=>{
+                    resolve()
+                })
+            }
         })
     }
 }

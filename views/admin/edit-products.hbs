@@ -29,11 +29,17 @@
         <input type="text" class="form-control" name="Description" value="{{product.Description}}"><br>
 
         <label for="">Image</label><br>
-        <img style="width:100px; height:100px"  src="/product-images/{{product._id}}.jpg">
-        <input type="file" name="Image" class="form-control"> <br><br>
+        <img style="width:100px; height:100px"  src="/product-images/{{product._id}}.jpg" id="viewimg">
+        <input type="file" name="Image" class="form-control" onchange="viewImage(event)"> <br><br>
 
-        <button type="submit" class="btn btn-dark">Submit</button>
+        <button type="submit" class="btn btn-dark">Update</button>
       </form>
       </div>
 </div>
 </section>
+
+<script>
+  function viewImage(event){
+    document.getElementById('viewimg').src=URL.createObjectURL(event.target.files[0])
+  }
+</script>
