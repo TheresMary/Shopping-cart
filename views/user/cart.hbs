@@ -1,8 +1,59 @@
-<div class="container">
-    <div class="row">
-        <div class="col-md-6 m-auto">
-            <h2>cart page:)</h2>
-        
-        </div>
-    </div>
-</div>
+<section class="container">
+
+  <div class="row">
+
+  <div class="col-12 mt-4">
+  <table class="table table-hover">
+  <thead class="thead-dark"> 
+      <tr>
+        <th scope="col">SI.No</th>
+        <th scope="col">Item</th>
+        <th scope="col">Image</th>
+        <th scope="col">Quantity</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each products}}
+      <tr>        
+        <th scope="row">{{@index}}</th>
+        <td>{{this.product.Name}}</td>
+        <td><img style="width:70px; height:70px"  src="/product-images/{{this.product._id}}.jpg"></td>        
+        <td>
+          <button class=" count-cart-item mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',-1)">-</button>
+          <span id="{{this.product._id}}">{{this.quantity}}</span>
+          <button class="count-cart-item ml-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',1)">+</button></td>               
+        <td><a href="" class="btn btn-dark white" onclick="return confirm('Are you sure you want to remove {{this.product.Name}} ?')">Remove</button></td>  
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  </div>
+  </div>  
+</section>
+
+<script>
+  function changeQuantity(cartId,prodId,count){
+    let quantity=parseInt(document.getElementById(prodId).innerHTML)  //current quant displayed in cart
+    count=parseInt(count)
+
+    $.ajax({
+      url:'/change-prod-quantity',
+      data:{
+        cart:cartId,
+        product:prodId,
+        count:count,
+        quantity:quantity
+      },
+      method:'post',
+      success:(response)=>{
+        if(response.removeProduct){
+            alert("Product removed from cart")
+            location.reload()
+        }
+        else{
+          document.getElementById(prodId).innerHTML=quantity+count;   //updated count
+        }
+      }
+    })
+  }
+</script>
