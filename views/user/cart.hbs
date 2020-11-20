@@ -9,30 +9,38 @@
         <th scope="col">SI.No</th>
         <th scope="col">Item</th>
         <th scope="col">Image</th>
+        <th scope="col">Price</th>
         <th scope="col">Quantity</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
       {{#each products}}
-      <tr>        
+      <tr>       
         <th scope="row">{{@index}}</th>
         <td>{{this.product.Name}}</td>
-        <td><img style="width:70px; height:70px"  src="/product-images/{{this.product._id}}.jpg"></td>        
+        <td><img style="width:70px; height:70px"  src="/product-images/{{this.product._id}}.jpg"></td>
+        <td>₹ {{this.product.Price}}</td>        
         <td>
-          <button class=" count-cart-item mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',-1)">-</button>
+          <button class="btn-dark count-cart-item mr-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user._id}}',-1)">-</button>
           <span id="{{this.product._id}}">{{this.quantity}}</span>
-          <button class="count-cart-item ml-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}',1)">+</button></td>               
-        <td><a href="" class="btn btn-dark white" onclick="return confirm('Are you sure you want to remove {{this.product.Name}} ?')">Remove</button></td>  
+          <button class="btn-dark count-cart-item ml-3" onclick="changeQuantity('{{this._id}}','{{this.product._id}}','{{../user._id}}',1)">+</button></td>               
+        <td><a href="/remove-products/{{this.product._id}}" class="btn btn-dark white" onclick="return confirm('Are you sure you want to remove {{this.product.Name}} ?')">Remove</button></td>  
       </tr>
       {{/each}}
     </tbody>
   </table>
+  <hr>
+      <div class="pr-3 mr-5">
+      <h5 class="float-right mt-4 mr-3">Total: ₹ <span id="total">{{total}}</span></h5><br><br><br>
+      <a href="/orders" style="width:150px;" class="float-right btn-dark btn"><b>Place Order</b></a>
+      </div>
   </div>
   </div>  
 </section>
 
 <script>
-  function changeQuantity(cartId,prodId,count){
+  function changeQuantity(cartId,prodId,userId,count){
     let quantity=parseInt(document.getElementById(prodId).innerHTML)  //current quant displayed in cart
     count=parseInt(count)
 
@@ -41,6 +49,7 @@
       data:{
         cart:cartId,
         product:prodId,
+        user:userId,
         count:count,
         quantity:quantity
       },
@@ -52,6 +61,7 @@
         }
         else{
           document.getElementById(prodId).innerHTML=quantity+count;   //updated count
+          document.getElementById('total').innerHTML=response.total
         }
       }
     })

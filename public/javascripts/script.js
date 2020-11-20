@@ -1,4 +1,4 @@
-const { parse } = require("handlebars")
+//const { parse } = require("handlebars")
 
 function addToCart(prodId){
     $.ajax({

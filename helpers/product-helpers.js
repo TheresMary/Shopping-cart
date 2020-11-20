@@ -6,9 +6,9 @@ var objectId = require('mongodb').ObjectID
 module.exports={
 
     addProduct:(product,callback)=>{
-        //console.log(product);
+        console.log(product);
         db.get().collection('product').insertOne(product).then((data)=>{
-            console.log(data)
+           // console.log(data)
             callback(data.ops[0]._id)
         })
     },
@@ -51,7 +51,20 @@ module.exports={
                 resolve(response )
             })
         })
-    }
+    },
+
+    removeProducts:(userId,prodId)=>{
+        return new Promise(async(resolve,reject)=>{
+        let removeProduct=await db.get().collection(collection.CART_COLLECTION)
+                .updateOne({user:objectId(userId)},
+                {
+                    $pull:{products:{item:objectId(prodId)}}   //remove item from pdt array if item & pdt id matches
+                })
+                if(removeProduct){
+                    resolve()
+                }
+        })
+    },
 
 
 

@@ -43,7 +43,7 @@ router.get('/signup',(req,res)=>{
 
 router.post('/signup',(req,res)=>{
   userHelpers.doSignup(req.body).then((response)=>{
-          console.log(response)
+          //console.log(response)
           req.session.loggedIn=true;
           req.session.user=response;
           res.redirect('/')
@@ -53,7 +53,7 @@ router.post('/signup',(req,res)=>{
 
 router.post('/login',(req,res)=>{
   userHelpers.doLogin(req.body).then((response)=>{
-    console.log(response)
+    //console.log(response)
     if(response.loginStatus){
        req.session.loggedIn = true;
        req.session.user = response.user
@@ -73,8 +73,9 @@ router.get('/logout',(req,res)=>{
 
 router.get('/cart',verifyLogin,async(req,res)=>{       //go to cart only if loggedin
   let products= await userHelpers.getCartProducts(req.session.user._id)
+  let total=await userHelpers.getTotalAmount(req.session.user._id)
   console.log(products)
-  res.render('user/cart',{products,user:req.session.user})
+  res.render('user/cart',{products,user:req.session.user,total})
 });
 
 router.get('/add-to-cart/:id',(req,res)=>{
@@ -86,9 +87,32 @@ router.get('/add-to-cart/:id',(req,res)=>{
 });
 
 router.post('/change-prod-quantity',(req,res,next)=>{
-  userHelpers.changeProductQuantity(req.body).then((response)=>{
+  userHelpers.changeProductQuantity(req.body).then(async(response)=>{
+     response.total=await userHelpers.getTotalAmount(req.body.user)
      res.json(response)
   })
+});
+
+router.get('/remove-products/:id',(req,res)=>{
+  productHelpers.removeProducts(req.session.user._id,req.params.id).then((response)=>{
+   res.redirect('/cart')
+  })
+});
+
+router.get('/orders',verifyLogin,async(req,res)=>{
+  let total=await userHelpers.getTotalAmount(req.session.user._id)
+  res.render('user/place-order',{total,user:req.session.user})
+});
+
+router.post('/orders',async(req,res)=>{
+  console.log(req.body)
+  //before placing order, take cart products & total amount
+  let products= await userHelpers.getCartProductList(req.body.userId) //cart products 
+  let total=await userHelpers.getTotalAmount(req.body.userId)  //total amount
+  userHelpers.placeOrder(req.body,products,total).then((response)=>{
+    res.json({status:true})
+  })
+  //res.render('user/place-order',{total,user:req.session.user})
 });
 
 module.exports = router;

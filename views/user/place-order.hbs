@@ -1,0 +1,51 @@
+<section>
+<div class="container">
+<div class="row">
+<div class="col-md-6 mt-3">   
+    <form action="/orders" id="checkout-form" class="form-group text-center border border-dark mt-5 p-5">
+        <p class="h2 mb-4">Delivery Details</p>
+
+            <input required type="text" name="Address" class="form-control mb-4" placeholder="Address">
+            <input required type="text" name="Pincode" class="form-control mb-4" placeholder="Pincode">
+            <input required type="text" name="Mobile" class="form-control mb-4" placeholder="Mobile">
+            <input required type="text" name="userId" value="{{user._id}}" hidden>
+</div>
+
+<div class="col-md-1"></div>
+<div class="col-md-4 mt-5">
+<div class="container text-center border border-dark mt-5 p-5">
+    <h5>Total Amount: Rs.{{total}}/- </h5>
+    <hr>
+    <div class="payment text-left">
+        <h6>Payment Method</h6>
+        <label class="radio-inline">
+             <input type="radio" name="payment-method" value="COD" checked> Cash On Delivery
+        </label><br>
+        <label class="radio-inline">
+             <input type="radio" name="payment-method" value="ONLINE" checked> Online Payment
+        </label><br><br>
+        <div class="text-center">
+        <button class="btn btn-dark" type="submit">Checkout</button>
+        </div>
+    </div>
+    </form>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<script>
+    $("#checkout-form").submit((e)=>{
+        e.preventDefault()      //prevent form submission
+
+        $.ajax({
+        url:'/orders',
+        method:'post',
+        data:$("#checkout-form").serialize(),      //to get data from form
+        success:(response)=>{
+            alert(response)
+        }
+        })
+    })
+</script>

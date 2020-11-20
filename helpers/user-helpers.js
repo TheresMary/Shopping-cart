@@ -49,7 +49,7 @@ module.exports={
             let userCart=await db.get().collection(collection.CART_COLLECTION).findOne({user:ObjectId(userId)})
             if(userCart){       //user already has a cart - update items
                 let prodExist=userCart.products.findIndex(product=> product.item==prodId)
-                console.log(prodExist)  //-1 if no pdt, else index of pdt
+                //console.log(prodExist)  //-1 if no pdt, else index of pdt
                 if(prodExist!=-1){
                     db.get().collection(collection.CART_COLLECTION).updateOne({user:objectId(userId),'products.item':objectId(prodId)},
                     {
@@ -79,7 +79,7 @@ module.exports={
     },
 
     getCartProducts:(userId)=>{
-        return new Promise(async(resolve,reject)=>{ 
+        return new Promise(async(resolve,reject)=>{
             let cartItems= await db.get().collection(collection.CART_COLLECTION).aggregate([
                 {
                     $match:{user:objectId(userId)}      //get the cart of user by matching user id
@@ -98,7 +98,7 @@ module.exports={
                 //             }
                 //         ],
                 //         as:'cartItems'
-
+    
                 //     }
                 // }
                 {
@@ -124,7 +124,7 @@ module.exports={
                     }
                 }
             ]).toArray()
-            console.log(cartItems[0].products)
+            //console.log(cartItems[0].products)
                 resolve(cartItems)
         })
     },
@@ -145,11 +145,11 @@ module.exports={
         details.quantity=parseInt(details.quantity)
         //console.log()
         return new Promise((resolve,reject)=>{
-            if(details.count==-1 && details.quantity==1){
+            if(details.count==-1 && details.quantity==1){       //check if product qnty is 0
                 db.get().collection(collection.CART_COLLECTION)
                 .updateOne({_id:objectId(details.cart)},
                 {
-                    $pull:{products:{item:objectId(details.product)}}
+                    $pull:{products:{item:objectId(details.product)}}   //remove item from pdt array if item & pdt id matches
                 }).then((response)=>{
                     resolve({removeProduct:true})
                 })
@@ -159,11 +159,90 @@ module.exports={
                 {
                     $inc:{'products.$.quantity':details.count}
                 }).then((response)=>{
-                    resolve()
+                    resolve({status:true})
                 })
             }
         })
 
+    },
+
+    getTotalAmount:(userId)=>{
+    return new Promise(async(resolve,reject)=>{ 
+        let total=await db.get().collection(collection.CART_COLLECTION).aggregate([
+            {
+                $match:{user:objectId(userId)}      //get the cart of user by matching user id
+            },
+            {
+                $unwind:'$products'        //to take item & quantity outside the products array
+            },
+            {
+                $project:{
+                    item:'$products.item',
+                    quantity:'$products.quantity'   //now we took cartid, item & quantity in cart
+                }
+            },
+            {
+                $lookup:{                       //will get product as array          
+                    from:collection.PRODUCT_COLLECTION, //product collection
+                    localField:'item',              //item from cart collection
+                    foreignField:'_id',                  //id from products collection
+                    as:'product'       //take details from pdt collection
+                }
+            },
+            {
+                $project:{
+                    item:1,quantity:1,product:{$arrayElemAt:['$product',0]}     //1 for elements to be projected,0 for not projecting
+                }
+            },
+            {
+                $group:{
+                    _id:null,
+                    total:{$sum:{$multiply:['$quantity',{$toInt: '$product.Price'}]}}
+                }
+            }
+        ]).toArray()
+        console.log(total[0].total)
+            resolve(total[0].total)
+    })
+    
+    },
+
+    placeOrder:(orderdetails,products,total)=>{
+        //before placing order, take cart products & total amount
+        return new Promise(async(resolve,reject)=>{
+            console.log(orderdetails,products,total)
+
+            //check order status-if COD:order placed, If online:order pending
+            let status=orderdetails['payment-method']==='Cash On Delivery'?'placed':'pending'  //conditional operator
+            let orderObj={
+                deliverydetails:{
+                    address:orderdetails.Address,
+                    pincode:orderdetails.Pincode,
+                    mobile:orderdetails.Mobile
+                },
+                userId:ObjectId(orderdetails.userId),
+                paymentMethod:orderdetails['payment-method'],   //bcoz payment method key is in quotes 
+                products:products,
+                total:total,
+                status:status
+            }
+
+            db.get().collection(collection.ORDER_COLLECTION).insertOne(orderObj).then((response)=>{
+                resolve()
+            })
+        })
+    },
+
+    getCartProductList:(userId)=>{
+        return new Promise(async(resolve,reject)=>{ 
+            let cart=await db.get().collection(collection.CART_COLLECTION).findOne({user:ObjectId(userId)})
+            resolve(cart.products)
+        })
     }
+
+
+
+
+
 }
 

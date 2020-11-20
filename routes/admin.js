@@ -20,7 +20,7 @@ router.get('/', function(req, res, next) {
     //console.log(req.files.Image);
     productHelpers.addProduct(req.body,(id)=>{
       let img = req.files.Image
-      console.log(id)
+      //console.log(id)
       img.mv('./public/product-images/'+id+'.jpg',(err)=>{
         if(!err){
           res.render('admin/add-products',{admin:true});
@@ -33,7 +33,7 @@ router.get('/', function(req, res, next) {
 
   router.get('/delete-products/:id',(req,res)=>{
     let prodId = req.params.id;
-    console.log(prodId);
+    //console.log(prodId);
     productHelpers.deleteProducts(prodId).then((response)=>{
       res.redirect('/admin/')
     })
@@ -42,7 +42,7 @@ router.get('/', function(req, res, next) {
   router.get('/edit-products/:id',async(req,res)=>{
      let prodId = req.params.id;
      let product = await productHelpers.getProductDetails(prodId)
-     console.log(product)
+     //console.log(product)
      res.render('admin/edit-products',{admin:true, product});
   });
 
