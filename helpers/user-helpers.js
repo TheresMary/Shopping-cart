@@ -213,7 +213,7 @@ module.exports={
             console.log(orderdetails,products,total)
 
             //check order status-if COD:order placed, If online:order pending
-            let status=orderdetails['payment-method']==='Cash On Delivery'?'placed':'pending'  //conditional operator
+            let status=orderdetails['payment-method']==='COD'?'placed':'pending'  //conditional operator
             let orderObj={
                 deliverydetails:{
                     address:orderdetails.Address,
@@ -223,11 +223,13 @@ module.exports={
                 userId:ObjectId(orderdetails.userId),
                 paymentMethod:orderdetails['payment-method'],   //bcoz payment method key is in quotes 
                 products:products,
-                total:total,
-                status:status
+                totalAmount:total,
+                status:status,
+                date:new Date()
             }
 
-            db.get().collection(collection.ORDER_COLLECTION).insertOne(orderObj).then((response)=>{
+            db.get().collection(collection.ORDER_COLLECTION).insertOne(orderObj).then((response)=>{     //add orderdetails to DB
+                db.get().collection(collection.CART_COLLECTION).removeOne({user:objectId(orderObj.userId)})      //clear cart once order is placed
                 resolve()
             })
         })
@@ -238,7 +240,51 @@ module.exports={
             let cart=await db.get().collection(collection.CART_COLLECTION).findOne({user:ObjectId(userId)})
             resolve(cart.products)
         })
-    }
+    },
+
+    getAllOrders:(userId)=>{
+        return new Promise(async(resolve,reject)=>{
+            //console.log(userId)
+            let orders= await db.get().collection(collection.ORDER_COLLECTION).find({userId:ObjectId(userId)}).toArray()
+            //console.log(orders)
+            resolve(orders)
+       })
+    },
+
+    getOrderProducts:(orderId)=>{
+        return new Promise(async(resolve,reject)=>{
+            console.log(orderId)  
+            let orderProd= await db.get().collection(collection.ORDER_COLLECTION).aggregate([
+                {
+                    $match:{_id:objectId(orderId)}    
+                },
+                {
+                    $unwind:'$products'        //to take item & quantity outside the array
+                },
+                {
+                    $project:{
+                        item:'$products.item',
+                        quantity:'$products.quantity'   //now we took cartid, item & quantity in cart
+                    }
+                },
+                {
+                    $lookup:{                       //will get product as array          
+                        from:collection.PRODUCT_COLLECTION, //product collection
+                        localField:'item',              //item from cart collection
+                        foreignField:'_id',                  //id from products collection
+                        as:'product'       //take details from pdt collection
+                    }
+                },
+                {
+                    $project:{
+                        item:1,quantity:1,product:{$arrayElemAt:['$product',0]}
+                    }
+                }
+            ]).toArray()
+            console.log(orderProd)
+                resolve(orderProd)
+        })
+    },
 
 
 

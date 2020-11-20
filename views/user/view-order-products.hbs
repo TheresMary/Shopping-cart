@@ -1,0 +1,17 @@
+  <section class="container">
+    <div class="row">
+      {{#each orderProduct}}
+      <div class="col-md-6 col-lg-4">
+        <div class="card border-secondary mt-5 mx-auto" style="width: 18rem; background:rgb(0, 0, 0);">
+          <div class="card-body">
+            <h6 class="card-title text-center white">{{this.product.Name}}</h6>
+            <img src="/product-images/{{this.product._id}}.jpg" class="card-img-top" alt="..."><br><br>
+            <h6 class="card-title white">Price: ₹{{this.product.Price}}
+              <p class="card-text right grey white">Quantity: {{this.quantity}}</p>
+            </h6>
+          </div>
+        </div>
+      </div>
+      {{/each}}
+    </div>
+  </section>
