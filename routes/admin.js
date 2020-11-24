@@ -3,57 +3,58 @@ var router = express.Router();
 var productHelpers = require('../helpers/product-helpers')
 
 const verifyadminLogin=(req,res,next)=>{
-  if(req.session.admin.loggedIn){
+  if(req.session.adminLoggedIn){
     next()
   }
   else{
-    res.redirect('/login')
+    res.redirect('/admin/login')
   }
 }
 
   /* GET users listing. */
   router.get('/', function(req, res, next) {
-
+    let admin=req.session.admin;
+    if(req.session.admin){
     productHelpers.getAllProducts().then((products)=>{
-      console.log(products)
-      res.render('admin/view-products',{admin:true, products});
+      //console.log(products)
+      res.render('admin/view-products',{admin:true, admin,products});
     });
+    }
+    else{
+      res.redirect('/admin/login')
+    }
   });
 
-  // router.get('/login',(req,res)=>{
-  //   if(req.session.admin){
-  //     res.redirect('/')
-  //   }
-  //   else{
-  //   res.render('admin/admin-login',{"loginErr":req.session.adminLoginError})
-  //   req.session.adminLoginError=false;     //error should go while refreshing
-  //   }
-  // });
+  router.get('/login',(req,res)=>{
+    if(req.session.admin){
+      res.redirect('/')
+    }
+    else{
+    res.render('admin/admin-login',{"loginErr":req.session.adminLoginError})
+    req.session.adminLoginError=false;     //error should go while refreshing
+    }
+  });
 
-  // router.post('/login',(req,res)=>{
-  //   productHelpers.saveLogin(req.body).then((response)=>{
-  //     console.log(response)
-  //     req.session.admin=response;
-  //     req.session.admin.loggedIn=true;
-  // })
-  //   productHelpers.doLogin(req.body).then((response)=>{
-  //     console.log(response)
-  //     if(response.loginStatus){
-  //        req.session.admin = response.admin
-  //        req.session.admin.loggedIn = true;
-  //        res.redirect('/')
-  //     }
-  //     else{
-  //       req.session.adminLoginError="Invalid Admin. Try Again!";
-  //       res.redirect('/login')
-  //     }
-  //   })
-  // });
+  router.post('/login',(req,res)=>{
+    productHelpers.doLogin(req.body).then((response)=>{
+      console.log(response)
+      if(response.loginStatus){
+         req.session.admin = response.admin
+         req.session.adminLoggedIn = true;
+         res.redirect('/admin/')
+      }
+      else{
+        req.session.adminLoginError="Invalid Admin. Try Again!";
+        res.redirect('/admin/login')
+      }
+    })
+  });
   
-  // router.get('/logout',(req,res)=>{
-  //   req.session.admin=null;
-  //   res.render('admin/admin-login')
-  // });
+  router.get('/logout',(req,res)=>{
+    req.session.admin=null;
+    req.session.adminLoggedIn=false;
+    res.render('admin/admin-login')
+  });
  
   router.get('/add-products',(req,res)=>{
     res.render('admin/add-products',{admin:true})

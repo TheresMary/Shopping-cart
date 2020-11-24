@@ -6,29 +6,31 @@ var objectId = require('mongodb').ObjectID
 
 module.exports={
 
-    saveLogin:(userData)=>{
+    createAdmin:()=>{
         return new Promise(async(resolve,reject)=>{
-            userData.Psw = await bcrypt.hash(userData.Psw,10);
-            db.get().collection(collection.ADMIN_COLLECTION).insertOne(userData).then((data)=>{
+            var adminData = { Email: "admin@gmail.com", Psw: "1234" };
+            adminData.Psw = await bcrypt.hash(adminData.Psw,10);
+            db.get().collection(collection.ADMIN_COLLECTION).insertOne(adminData).then((data)=>{
                 resolve(data.ops[0])
             })
         })
     },
 
-    doLogin:(userData)=>{
+    doLogin:(adminData)=>{
         return new Promise(async(resolve,reject)=>{
             let response={};
-            let user = await  db.get().collection(collection.ADMIN_COLLECTION).findOne({Email: userData.Email})
-            if(!user){      //email not found
+            console.log(adminData)
+            let admin = await db.get().collection(collection.ADMIN_COLLECTION).findOne({Email: adminData.Email})
+            if(!admin){      //email not found
                 response.loginStatus=false
             }
             else{           
-              validPassword= await bcrypt.compare(userData.Psw,user.Psw)
+              validPassword= await bcrypt.compare(adminData.Psw,admin.Psw)
                 if(!validPassword){         //psw incorrect
                     response.loginStatus=false
                 }
                 else{                       //psw correct
-                    response.user=user
+                    response.admin=admin
                     response.loginStatus=true
                 }
             }
