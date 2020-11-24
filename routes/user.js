@@ -1,11 +1,12 @@
 const { response } = require('express');
 var express = require('express');
+const { resolve } = require('promise');
 var router = express.Router();
 var productHelpers = require('../helpers/product-helpers')
 var userHelpers = require('../helpers/user-helpers')
 
 const verifyLogin=(req,res,next)=>{
-  if(req.session.loggedIn){
+  if(req.session.userLoggedIn){
     next()
   }
   else{
@@ -28,12 +29,12 @@ router.get('/',async function(req, res, next) {
 });
 
 router.get('/login',(req,res)=>{
-  if(req.session.loggedIn){
+  if(req.session.user){
     res.redirect('/')
   }
   else{
-  res.render('user/user-login',{"loginErr":req.session.loginError})
-  req.session.loginError=false;     //error should go while refreshing
+  res.render('user/user-login',{"loginErr":req.session.userLoginError})
+  req.session.userLoginError=false;     //error should go while refreshing
   }
 });
 
@@ -44,8 +45,8 @@ router.get('/signup',(req,res)=>{
 router.post('/signup',(req,res)=>{
   userHelpers.doSignup(req.body).then((response)=>{
           //console.log(response)
-          req.session.loggedIn=true;
           req.session.user=response;
+          req.session.userLoggedIn=true;
           res.redirect('/')
 
       })
@@ -55,25 +56,30 @@ router.post('/login',(req,res)=>{
   userHelpers.doLogin(req.body).then((response)=>{
     //console.log(response)
     if(response.loginStatus){
-       req.session.loggedIn = true;
        req.session.user = response.user
+       req.session.userLoggedIn = true;
        res.redirect('/')
     }
     else{
-      req.session.loginError="Invalid User. Try Again!";
+      req.session.userLoginError="Invalid User. Try Again!";
       res.redirect('/login')
     }
   })
 });
 
 router.get('/logout',(req,res)=>{
-  req.session.destroy();
+  req.session.user=null;
+  req.session.userLoggedIn=false;
   res.render('user/user-login')
 });
 
 router.get('/cart',verifyLogin,async(req,res)=>{       //go to cart only if loggedin
   let products= await userHelpers.getCartProducts(req.session.user._id)
-  let total=await userHelpers.getTotalAmount(req.session.user._id)
+  let total=0
+  if(products.length>0){
+    total=await userHelpers.getTotalAmount(req.session.user._id)
+  }
+ 
   console.log(products)
   res.render('user/cart',{products,user:req.session.user,total})
 });
@@ -99,18 +105,25 @@ router.get('/remove-products/:id',(req,res)=>{
   })
 });
 
-router.get('/orders',verifyLogin,async(req,res)=>{
+router.get('/place-orders',verifyLogin,async(req,res)=>{
   let total=await userHelpers.getTotalAmount(req.session.user._id)
   res.render('user/place-order',{total,user:req.session.user})
 });
 
-router.post('/orders',async(req,res)=>{
+router.post('/place-orders',async(req,res)=>{
   console.log(req.body)
   //before placing order, take cart products & total amount
   let products= await userHelpers.getCartProductList(req.body.userId) //cart products 
   let total=await userHelpers.getTotalAmount(req.body.userId)  //total amount
-  userHelpers.placeOrder(req.body,products,total).then((response)=>{
-    res.json({status:true})
+  userHelpers.placeOrder(req.body,products,total).then((orderId)=>{
+    if(req.body['payment-method']==='COD'){
+      res.json({codSuccess:true})
+    }
+    else{
+      userHelpers.generateRazorpay(orderId,total).then((response)=>{  //order id from userhelpers.placeorder response
+          res.json(response)  
+      }) 
+    }
   })
 });
 
@@ -130,5 +143,17 @@ router.get('/view-order-products/:id',async(req,res)=>{
   res.render('user/view-order-products',{user:req.session.user,orderProduct})
 });
 
+router.post('/verify-payment',(req,res)=>{
+  console.log(req.body)
+  userHelpers.verifyPayment(req.body).then(()=>{
+    userHelpers.paymentStatus(req.body['order[receipt]']).then(()=>{
+      console.log("payment successfull")
+      res.json({status:true})
+    })
+  }).catch((err)=>{
+    console.log(err)
+    res.json({status:false,errMsg:''})
+  })
+})
 
 module.exports = router;

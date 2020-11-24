@@ -2,7 +2,7 @@
 <div class="container">
 <div class="row">
 <div class="col-md-6 mt-3">   
-    <form action="/orders" id="checkout-form" class="form-group text-center border border-dark mt-5 p-5">
+    <form action="/place-orders" id="checkout-form" class="form-group text-center border border-dark mt-5 p-5">
         <p class="h2 mb-4">Delivery Details</p>
 
             <input required type="text" name="Address" class="form-control mb-4" placeholder="Address">
@@ -35,20 +35,74 @@
 </div>
 </section>
 
+
 <script>
     $("#checkout-form").submit((e)=>{
         e.preventDefault()      //prevent form submission
 
         $.ajax({
-        url:'/orders',
+        url:'/place-orders',
         method:'post',
         data:$("#checkout-form").serialize(),      //to get data from form
         success:(response)=>{
             alert(response)
-            if(response.status){
+            if(response.codSuccess){
                 location.href='/order-success'
+            }else{
+                razorpayPayment(response)
             }
         }
         })
     })
+
+    function razorpayPayment(order){
+        var options = {
+            "key": "rzp_test_boh3l9sbmpk6Up", // Enter the Key ID generated from the Dashboard
+            "amount": order.amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            "currency": "INR",
+            "name": "BOOTS",
+            "description": "Test Transaction",
+            "image": "https://example.com/your_logo",
+            "order_id": order.id, //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+            "handler": function (response){
+                //alert(response.razorpay_payment_id);
+                //alert(response.razorpay_order_id);
+                // alert(response.razorpay_signature)
+
+                verifyPayment(response,order)
+            },
+            "prefill": {
+                "name": "Gaurav Kumar",
+                "email": "gaurav.kumar@example.com",
+                "contact": "9999999999"
+            },
+            "notes": {
+                "address": "Razorpay Corporate Office"
+            },
+            "theme": {
+                "color": "black"
+            }
+        };
+        var rzp1 = new Razorpay(options);
+        rzp1.open();
+    }
+        function verifyPayment(payment,order){
+            $.ajax({
+                url:'/verify-payment',
+                data:{
+                    payment,
+                    order
+                },
+                method:'post',
+                success:(response)=>{
+                    if(response.status){
+                        location.href='/order-success'
+                    }else{
+                        alert("payment failed")
+                    }
+                }
+            })
+        }
+    
+
 </script>

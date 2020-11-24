@@ -1,9 +1,41 @@
 var db = require('../config/connection')
 var collection = require('../config/collections')
+var bcrypt = require('bcrypt')
 const { ObjectID } = require('mongodb')
 var objectId = require('mongodb').ObjectID
 
 module.exports={
+
+    saveLogin:(userData)=>{
+        return new Promise(async(resolve,reject)=>{
+            userData.Psw = await bcrypt.hash(userData.Psw,10);
+            db.get().collection(collection.ADMIN_COLLECTION).insertOne(userData).then((data)=>{
+                resolve(data.ops[0])
+            })
+        })
+    },
+
+    doLogin:(userData)=>{
+        return new Promise(async(resolve,reject)=>{
+            let response={};
+            let user = await  db.get().collection(collection.ADMIN_COLLECTION).findOne({Email: userData.Email})
+            if(!user){      //email not found
+                response.loginStatus=false
+            }
+            else{           
+              validPassword= await bcrypt.compare(userData.Psw,user.Psw)
+                if(!validPassword){         //psw incorrect
+                    response.loginStatus=false
+                }
+                else{                       //psw correct
+                    response.user=user
+                    response.loginStatus=true
+                }
+            }
+            resolve(response)                //return response back to doLogin
+
+        })
+    },
 
     addProduct:(product,callback)=>{
         console.log(product);
